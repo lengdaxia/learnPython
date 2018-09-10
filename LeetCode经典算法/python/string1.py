@@ -33,7 +33,17 @@ def main():
 
 		# 比较两个字符串，A，B.返回A是否包含B中所有字符
 		def compare_strings(self,A,B):
-			pass
+			letters = collections.defaultdict(int)
+			for a in A:
+				letters[a] += 1
+			for b in B:
+				if b not in letters:
+					return False
+				elif letters[b] <= 0:
+					return False
+				else:
+					letters[b] -= 1
+			return True
 
 		# anagrams
 		# 	Given an array of strings, return all groups of strings that are anagrams.
@@ -44,11 +54,41 @@ def main():
 		# Note
 		# All inputs will be in lower-case
 		def anagrams(self,strs):
-			pass
+			if len(strs)<2:
+				return strs
+			result = []
+			visited = [False]*len(strs)
+			for index1,s1 in enumerate(strs):
+				hasAnagrams = False
+				for index2,s2 in enumerate(strs):
+					if index2 > index2 and not visited[index2] and self.isAnagrams(S1,s2):
+						result.append(s2)
+						visited[index2]=True
+						hasAnagrams = True
+				if not visited[index1] and hasAnagrams:
+					result.append(s1)
+			return result
 
+		def isAnagrams(self,str1,str2):
+			if sorted(str1) == sorted(strs):
+				return True
+			else:
+				return False
 
 		def anagrams2(self,strs):
-			pass
+			strDict = {}
+			result  = []
+
+			for string in strs:
+				if "".join(sorted(string)) not in strDict.keys():
+					strDict["".join(sorted(string))] = 1
+				else:
+					strDict["".join(sorted(string))] += 1
+				for string in strs:
+					if strDict["".join(sorted(string))] > 1:
+						result.append(string)
+						
+
 
 
 		# 最长公共子串
@@ -75,6 +115,11 @@ def main():
 	print(Solution.anagram(str1,str2))
 	print(Solution.anagram2(str1,str2))
 
+
+# 	异性字符串数组查找
+	anaList = ["lint", "intl", "inlt", "code"]
+	ret = s.anagrams(anaList)
+	print(ret)
 
 if __name__ == '__main__':
 	main()
