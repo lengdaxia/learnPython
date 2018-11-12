@@ -9,4 +9,3 @@ im.convert("P")
 
 print(im.histogram())
 
-print 'marlon'
