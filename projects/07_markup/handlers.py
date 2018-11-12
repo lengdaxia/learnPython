@@ -26,7 +26,7 @@ class Handler:
 class HTMLRenderer(Handler):
 
     # 处理HTML程序，给文本添加响应的html标记
-    def start_documet(self):
+    def start_document(self):
         print('<html><head><title>ShiYanLou</title></head></body>')
 
     def end_document(self):

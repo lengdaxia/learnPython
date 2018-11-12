@@ -16,6 +16,3 @@ def blocks(file):
             block = []
 
 
-s = "   This is me\n"
-s.strip()
-
