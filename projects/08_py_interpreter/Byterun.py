@@ -29,7 +29,7 @@ class VirtualMachine(object):
 
 
     def run_code(self,code,global_names=None,local_names = None):
-        frame = self.make_frame()
+        frame = self.make_frame(code,global_names=global_names,local_names=local_names)
         self.run_frame(frame)
 
 
@@ -91,12 +91,12 @@ class VirtualMachine(object):
             if local_names is None:
                 local_names = global_names
 
-        elif self.frame:
+        elif self.frames:
             global_names = self.frame.global_names
             local_names = {}
         else:
             global_names = local_names = {
-            '__buildtins__':__buildtins__,
+            '__builtins__':__builtins__,
             '__name__':'__main__',
             '__doc__':None,
             '__package__':None
@@ -138,7 +138,7 @@ class VirtualMachine(object):
         if why == 'exception':
             exc,val,tb = self.last_exception
             e = exc(val)
-            e.__tracebacl__ tb
+            e.__traceback__ = tb
 
             raise e
 
@@ -155,7 +155,7 @@ class VirtualMachine(object):
     def push(self,*vals):
         self.frame.stack.extend(vals)
 
-    def popn(self,n)
+    def popn(self,n):
         if n:
             ret = self.frame.stack[-n:]
             self.frame.stack[-n:] = []
@@ -168,7 +168,9 @@ class VirtualMachine(object):
         f = self.frame
         opoffset = f.last_instruction
         # 取得要运行的指令
-        byteCode = ord(f.code_obj.co_code[opoffset])
+        byteCode = ord(str(f.code_obj.co_code[opoffset]))
+        # byteCode = f.code_obj.co_code[opoffset]
+
         f.last_instruction += 1
 
         # 指令的名称
@@ -180,7 +182,7 @@ class VirtualMachine(object):
             arg = f.code_obj.co_code[f.last_instruction:f.last_instruction+2]
             f.last_instruction += 2
 
-            arg_val = ord(arg[0] + (ord(arg[1]*256)))
+            arg_val = ord(str(arg[0] + ord(str(arg[1]*256)))
             if byteCode in dis.hasconst: #查找常量
                 arg = f.code_obj.co_consts[arg_val]
             elif byteCode in dis.hasname:#查找变量
@@ -412,6 +414,7 @@ class VirtualMachine(object):
 
 # Frame类，每一个Frame对象都维护一个code object引用，并管理一些必要的状态信息，比如全局与局部的命名空间，以及对调用它自身的帧的引用和最后执行的字节码
 class Frame(object):
+
     def __init__(self,code_obj,global_names,local_names,prev_frame):
         self.code_obj = code_obj
         self.f_globals = global_names
@@ -423,12 +426,14 @@ class Frame(object):
 
         # block栈
         self.block_stack = []
+
         if prev_frame:
             self.builtin_names = prev_frame.builtin_names
         else:
-            self.builtin_names = local_names['__buildtins__']
-            if hassttr(self.builtin_names,'__dict__'):
+            self.builtin_names = local_names['__builtins__']
+            if hasattr(self.builtin_names,'__dict__'):
                 self.builtin_names = self.builtin_names.__dict__
+
         self.last_instruction = 0
 
 
@@ -459,13 +464,13 @@ class Function(object):
             kw['closure'] = tuple(make_cell(0) for _ in closure)
         self._func = types.FunctionType(code,globs,**kw)
 
-    def __call__(self,**args,**kwargs):
+    def __call__(self,*args,**kwargs):
         # ，每当调用一次函数，就会创建一个新的frame并运行
         callargs = inspect.getcallargs(self._func,*args,**kwargs)
 
         # 创建函数的帧
         frame = self._vm.make_frame(
-            self.func_code,callargs,self..func_locals,{}
+            self.func_code,callargs,self.func_locals,{}
             )
         return self._vm.run_frame(frame)
 
