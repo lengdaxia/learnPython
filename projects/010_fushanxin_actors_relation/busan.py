@@ -45,12 +45,14 @@ for line in lineNames:
             relationships[name1][name2] += 1
 
 
+# 节点资料
 with codecs.open("busan_node.txt",'w','gbk') as f:
     f.write("Id Label Wight\r\n")
     for name,times in names.items():
         f.write(name + " " + name + " " + str(times) + "\r\n")
 
 
+# 边数据
 with codecs.open("busan_edge.txt",'w','gbk') as f:
     f.write("Source Target Weight \r\n")
     for name, edges in relationships.items():
