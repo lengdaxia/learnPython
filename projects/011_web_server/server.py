@@ -1,12 +1,7 @@
 # encoding:utf-8
 
 from http.server import BaseHTTPRequestHandler,HTTPServer
-import sys,os
-
-class ServerException(Exception):
-    '''服务器内部错误 500'''
-    pass
-
+from APIcase import *
 class RequestHandler(BaseHTTPRequestHandler):
 
     # 处理请求并返回页面
@@ -37,23 +32,39 @@ class RequestHandler(BaseHTTPRequestHandler):
     </html>
     """
 
+    Cases = [case_no_file(),
+             case_cgi_file(),
+             case_existing_file(),
+             case_index_file(),
+             case_always_fail()]
+
     def do_GET(self):
 
         try:
             # 获取当前工作路径
             full_path = os.getcwd() + self.path
+            print('do_GET:' + full_path)
+            self.full_path = full_path
 
-            if not os.path.exists(full_path):
-                raise ServerException("'{0}' not found".format(self.path))
-            elif os.path.isfile(full_path):
-                self.handle_file(full_path)
-            else:
-                raise ServerException("Unknow object '{0}'".format(self.path))
+            for case in self.Cases:
+                if case.test(self):
+                    case.act(self)
+                    break
+            # if not os.path.exists(full_path):
+            #     raise ServerException("'{0}' not found".format(self.path))
+            # elif os.path.isfile(full_path):
+            #     self.handle_file(full_path)
+            # else:
+            #     raise ServerException("Unknow object '{0}'".format(self.path))
 
         except Exception as msg:
             self.handle_error(msg)
 
+
+    # def run_cgi(self,full_path):
+
     def handle_file(self,full_path):
+        print('handle_file:' + full_path)
         try :
             with open(full_path,'rb') as reader:
                 content = reader.read()
@@ -89,7 +100,8 @@ class RequestHandler(BaseHTTPRequestHandler):
 
 if __name__ == '__main__':
 
-    serverAddress = ('',8000)
+    serverAddress = ('',8001)
     server = HTTPServer(serverAddress,RequestHandler)
+
     # server.socket.close()
     server.serve_forever()
