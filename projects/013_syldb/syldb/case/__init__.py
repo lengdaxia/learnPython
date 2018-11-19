@@ -71,14 +71,14 @@ class BaseCase:
 class BaseListCase(BaseCase):
     def __call__(self,data,data_type):
         if not isinstance(self.condition,list):
-            raise TypeErrpr('condition type error ,value must be %s' data_type)
+            raise TypeError('condition type error ,value must be %s' % data_type)
 
         conditions = []
 
         for value in self.condition:
             value = TYPE_MAP[data_type.value](value)
 
-            if isinstance(value,str)
+            if isinstance(value,str):
                 value = value.replace("'",'').replace("",'')
             conditions.append(value)
         return SYMBOL_MAP[self.symbol](data,conditions)

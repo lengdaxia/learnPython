@@ -117,7 +117,8 @@ class Engine:
 
     def serilized(self):
         return SerializedInterface.json.dumps([
-                database.serilized() for database in self.__database_objs.values()
+
+                database.serialized() for database in self.__database_objs.values()
             ])
 
     @staticmethod

@@ -1,5 +1,6 @@
 from syldb.core import SerializedInterface
 from syldb.core.field import Field,FieldType,FieldKey
+from syldb.case import BaseCase
 
 # 创建表
 # table = Table(f_id = Field(data_type = FieldType.INT,keys= [FieldKey.PRIMARY,FieldKey.INCREMENT],f_name=Field(data_type=FieldType.VARCHAR,keys=FieldKey.UNIQUE))
@@ -103,9 +104,51 @@ class Table(SerializedInterface):
 
     def __parse_conditions(self,**conditions):
 
-        # 如果条件为空，数据索引为所有，反之为匹配条件的索引
-        match_index = range(0,self.__rows)
+        if 'conditions' in conditions:
+            conditions = conditions['conditions']
+
+        if not conditions:
+            match_index = range(0,self.__rows)
+        else:
+            name_tmp = self.__get_name_tmp(**conditions)
+
+            match_tmp = []
+            match_index = []
+
+            is_first = True
+
+            for field_name in name_tmp:
+                data = self.__get_field_data(field_name)
+                data_type = self.__get_field_type(field_name)
+
+                case = conditions[field_name]
+                if not isinstance(case, BaseCase):
+                    raise TypeError('Type error ,value must be "Case" Object')
+
+                if is_first:
+                    length = self.__get_field(field_name).length()
+
+                    for index in range(0,length):
+                        if case(data[index],data_type):
+                            match_tmp.append(index)
+                            match_index.append(index)
+
+                    is_first = False
+
+                    continue
+                for index in match_tmp:
+                    if not case(data[index],data_type):
+                        match_index.remove(index)
+
+                match_tmp = match_index
+
         return match_index
+        # # 如果条件为空，数据索引为所有，反之为匹配条件的索引
+        # match_index = range(0,self.__rows)
+        # return match_index
+    def __get_field_type(self,field_name):
+        field = self.__get_field(field_name)
+        return field.get_type()
 
 
     def delete(self,**conditions):
