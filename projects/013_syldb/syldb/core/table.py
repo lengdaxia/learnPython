@@ -74,11 +74,11 @@ class Table(SerializedInterface):
         for index in match_index:
             # 返回list类型的数据，也就是没有字段名
             if format_type == 'list':
-                row = [self.__get_field_data(filed_name,index) for filed_name in fields]
+                row = [self.__get_field_data(field_name,index) for field_name in fields]
             elif format_type == 'dict': #返回dict类型的数据，也就是字段和值成键值对
                 row = {}
-                for filed_name in fields:
-                    row[filed_name] = self.__get_field_data(filed_name,index)
+                for field_name in fields:
+                    row[field_name] = self.__get_field_data(field_name,index)
             else:
                 # 如果找不到类型，抛出格式错误异常
                 raise Exception('format type invalid')
@@ -95,7 +95,7 @@ class Table(SerializedInterface):
         return self.__field_objs[field_name]
 
     # 获取字段中的数据
-    def __get_field_data(self,filed_name,index = None):
+    def __get_field_data(self,field_name,index = None):
         # 获取Field对象
         field = self.__get_field(field_name)
 

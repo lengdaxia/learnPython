@@ -84,3 +84,62 @@ class BaseListCase(BaseCase):
         return SYMBOL_MAP[self.symbol](data,conditions)
 
 
+class IsCase(BaseCase):
+    def __init__(self, condition):
+        super().__init__(condition, symbol='=')
+
+
+class IsNotCase(BaseCase):
+    def __init__(self, condition):
+        super().__init__(condition, symbol='!=')
+
+
+class InCase(BaseListCase):
+    def __init__(self, condition):
+        super().__init__(condition, symbol='IN')
+
+
+class NotInCase(BaseListCase):
+    def __init__(self, condition):
+        super().__init__(condition, symbol='NOT_IN')
+
+
+class GreaterCase(BaseCase):
+    def __init__(self, condition):
+        super().__init__(condition, symbol='>')
+
+
+class LessCase(BaseCase):
+    def __init__(self, condition):
+        super().__init__(condition, symbol='<')
+
+
+class GAECase(BaseCase):
+    def __init__(self, condition):
+        super().__init__(condition, symbol='>=')
+
+
+class LAECase(BaseCase):
+    def __init__(self, condition):
+        super().__init__(condition, symbol='<=')
+
+
+class LikeCase(BaseCase):
+    def __init__(self, condition):
+        super().__init__(condition, symbol='LIKE')
+
+    def __call__(self, data, data_type):
+        self.condition = TYPE_MAP[data_type.value](self.condition)
+
+        return SYMBOL_MAP[self.symbol](str(data), self.condition)
+
+
+class RangeCase(BaseCase):
+    def __init__(self, start, end):
+        super().__init__((int(start), int(end)), symbol='RANGE')
+
+    def __call__(self, data, data_type):
+        if not isinstance(self.condition, tuple):
+            raise TypeError('not a tuple condition')
+
+        return SYMBOL_MAP[self.symbol](data, self.condition)

@@ -52,13 +52,13 @@ class Field(SerializedInterface):
         return True
 
     # 键值约束
-    def __check_keys(self,vaule):
+    def __check_keys(self,value):
 
         #如果字段包含自增键，则选择合适的值自动自增
         if FieldKey.INCREMENT in self.__keys:
             # 如果值为空，则用字段数据长度作为基值自增
-            if vaule is None:
-                vaule = self.__rows + 1
+            if value is None:
+                value = self.__rows + 1
 
             # 如果值已经存在，则抛出一个值已经存在的异常
             if value in self.__values:

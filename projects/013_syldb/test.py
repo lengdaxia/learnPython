@@ -11,8 +11,8 @@ e.create_table(name='t_test',
                )
 
 
-# e.insert(table_name='t_test',f_id=0,f_name='shiyanlou_001')
-# e.insert(table_name='t_test',f_id=1,f_name='shiyanlou_002')
+e.insert(table_name='t_test',f_name='shiyanlou_001')
+e.insert(table_name='t_test',f_name='shiyanlou_002')
 
 ret = e.search('t_test')
 for row in ret:
