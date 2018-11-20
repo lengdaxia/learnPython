@@ -1,6 +1,7 @@
 from syldb.core import SerializedInterface
 from syldb.core.database import Database
-
+from syldb.parse import SQLParser
+import prettytable
 import base64
 
 def _decode_db(content):
@@ -15,6 +16,18 @@ def _encode_db(content):
 class Engine:
 
     def __init__(self,db_name=None,format_type='dict',path='db.data'):
+
+         # 数据库映射表
+        self.__action_map = {
+            'insert': self.__insert,
+            'update': self.__update,
+            'search': self.__search,
+            'delete': self.__delete,
+            'drop': self.__drop,
+            'show': self.__show,
+            'use': self.__use,
+            'exit': self.__exit
+        }
 
         self.path = path #数据库存放路径名
 
@@ -107,6 +120,84 @@ class Engine:
                 tmp.append({'name':table})
         return tables
 
+    def __insert(self, action):
+        table = action['table']
+        data = action['data']
+
+        return self.insert(table, data=data)
+
+    def __update(self, action):
+        table = action['table']
+        data = action['data']
+        conditions = action['conditions']
+
+        return self.update(table, data, conditions=conditions)
+
+    def __delete(self, action):
+        table = action['table']
+        conditions = action['conditions']
+
+        return self.delete(table, conditions=conditions)
+
+    def __search(self, action):
+        table = action['table']
+        fields = action['fields']
+        conditions = action['conditions']
+
+        return self.search(table, fields=fields, conditions=conditions)
+
+    def __drop(self, action):
+        if action['kind'] == 'database':
+            return self.drop_database(action['name'])
+        return self.drop_table(action['name'])
+
+    def __show(self, action):
+        if action['kind'] == 'databases':
+            return self.get_database(format_type='dict')
+        return self.get_table(format_type='dict')
+
+    def __use(self, action):
+        return self.select_db(action['database'])
+
+    def __exit(self, _):
+        return 'exit'
+
+
+    def execute(self, statement):
+
+        action = SQLParser().parse(statement)
+
+        ret = None
+
+        if action['type'] in self.__action_map:
+            ret = self.__action_map.get(action['type'])(action)
+
+            if action['type'] in ['insert', 'update', 'delete', 'create', 'drop']:
+                self.commit()
+
+        # 返回执行的结果
+        return ret
+
+
+    def run(self):
+        while True:
+            # 获得输入的 SQL 语句
+            statement = input('\033[00;37misadb> ')
+            try:
+                ret = self.execute(statement)
+                if ret in ['exit', 'quit']:
+                    print('Goodbye!')
+                    return
+
+                if ret:
+                    pt = prettytable.PrettyTable(ret[0].keys())
+                    pt.align = 'l'
+                    for line in ret:
+                        pt.align = 'r'
+                        pt.add_row(line.values())
+                    print(pt)
+            except Exception as exc:
+                print('\033[00;31m' + str(exc))
 
     def commit(self):
         self.__dump_databases()
